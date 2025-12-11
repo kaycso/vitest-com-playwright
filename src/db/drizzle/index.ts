@@ -12,7 +12,7 @@ const makeDrizzle = () => {
     schema: { todo: todoTable },
   });
 
-  if (["teste", "e2e"].includes(currentEnv)) {
+  if (["test", "e2e"].includes(currentEnv)) {
     migrate(db, { migrationsFolder: drizzleMigrationsFolder });
   }
 
