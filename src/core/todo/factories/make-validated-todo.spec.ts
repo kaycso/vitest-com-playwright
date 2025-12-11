@@ -19,7 +19,7 @@ describe("makeValidatedTodo (unit)", () => {
 
     const expectedValidatedTodo = {
       success: true,
-      data: {
+      todo: {
         id: todo.id,
         description,
         createdAt: todo.createdAt,
