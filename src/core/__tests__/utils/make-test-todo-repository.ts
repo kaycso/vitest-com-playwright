@@ -27,6 +27,16 @@ function makeTestTodos(): Todo[] {
   });
 }
 
+export function makeTestTodo(): Todo {
+  const todo = {
+    id: `todo`,
+    description: `Todo`,
+    createdAt: new Date().toISOString(),
+  };
+
+  return todo;
+}
+
 export async function insertTestTodos() {
   const { insertTodoDb } = await makeTestTodoRepository();
   const todos = makeTestTodos();

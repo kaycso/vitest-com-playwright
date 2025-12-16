@@ -1,9 +1,9 @@
 import { afterAll, beforeEach, describe, expect, test } from "vitest";
 import {
   insertTestTodos,
+  makeTestTodo,
   makeTestTodoRepository,
 } from "@/core/__tests__/utils/make-test-todo-repository";
-import { Todo } from "../schemas/todo.contract";
 
 describe("DrizzleTodoRepository (integration)", () => {
   beforeEach(async () => {
@@ -44,11 +44,7 @@ describe("DrizzleTodoRepository (integration)", () => {
   describe("create", () => {
     test("should create a new todo", async () => {
       const { repository } = await makeTestTodoRepository();
-      const todo: Todo = {
-        id: "1",
-        description: "Todo 1",
-        createdAt: new Date().toISOString(),
-      };
+      const todo = makeTestTodo();
       const expectedResult = {
         success: true,
         todo,
@@ -59,19 +55,33 @@ describe("DrizzleTodoRepository (integration)", () => {
       expect(result).toStrictEqual(expectedResult);
     });
 
-    test("should throw an error if the description is invalid", () => {});
+    test.each([null, undefined])(
+      "should not create a todo if the description is invalid (null, undefined)",
+      async (invalidDescription) => {
+        const { repository } = await makeTestTodoRepository();
+        const todo = makeTestTodo();
+        // @ts-expect-error erro esperado para validação
+        todo.description = invalidDescription;
 
-    test("should throw an error if the description is too long", () => {});
+        const tryCreateNewTodo = repository.create(todo);
 
-    test("should throw an error if the description is too short", () => {});
+        await expect(tryCreateNewTodo).rejects.toThrowError();
+      }
+    );
 
-    test("should throw an error if the description is empty", () => {});
+    test("should throw an error if the descriptions exist in the database", async () => {
+      const { repository } = await makeTestTodoRepository();
+      const todo = makeTestTodo();
+      const expectedResult = {
+        success: false,
+        errors: ["Já existe um todo com id ou descrição enviado"],
+      };
 
-    test("should throw an error if the description is null", () => {});
+      await repository.create(todo);
+      const createdAgain = await repository.create(todo);
 
-    test("should throw an error if the description is undefined", () => {});
-
-    test("should throw an error if the descriptions exist in the database", () => {});
+      expect(createdAgain).toStrictEqual(expectedResult);
+    });
   });
 
   describe("remove", () => {
