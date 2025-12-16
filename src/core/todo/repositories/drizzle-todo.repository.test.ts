@@ -69,7 +69,7 @@ describe("DrizzleTodoRepository (integration)", () => {
       }
     );
 
-    test("should throw an error if the descriptions exist in the database", async () => {
+    test("should not create a todo if the description or id already exists", async () => {
       const { repository } = await makeTestTodoRepository();
       const todo = makeTestTodo();
       const expectedResult = {
@@ -78,33 +78,19 @@ describe("DrizzleTodoRepository (integration)", () => {
       };
 
       await repository.create(todo);
-      // console.log(result);
       const createdWithSameDescription = await repository.create({
         id: "new Id",
         description: todo.description,
         createdAt: new Date().toISOString(),
       });
-
-      expect(createdWithSameDescription).toStrictEqual(expectedResult);
-    });
-
-    test("should throw an error if the id exist in the database", async () => {
-      const { repository } = await makeTestTodoRepository();
-      const todo = makeTestTodo();
-      const expectedResult = {
-        success: false,
-        errors: ["Já existe um todo com id ou descrição enviado"],
-      };
-
-      await repository.create(todo);
-      // console.log(result);
-      const createdWithSameDescription = await repository.create({
+      const createdWithSameId = await repository.create({
         id: todo.id,
         description: "new description",
         createdAt: new Date().toISOString(),
       });
 
       expect(createdWithSameDescription).toStrictEqual(expectedResult);
+      expect(createdWithSameId).toStrictEqual(expectedResult);
     });
   });
 
