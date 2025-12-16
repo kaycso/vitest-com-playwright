@@ -78,15 +78,61 @@ describe("DrizzleTodoRepository (integration)", () => {
       };
 
       await repository.create(todo);
-      const createdAgain = await repository.create(todo);
+      // console.log(result);
+      const createdWithSameDescription = await repository.create({
+        id: "new Id",
+        description: todo.description,
+        createdAt: new Date().toISOString(),
+      });
 
-      expect(createdAgain).toStrictEqual(expectedResult);
+      expect(createdWithSameDescription).toStrictEqual(expectedResult);
+    });
+
+    test("should throw an error if the id exist in the database", async () => {
+      const { repository } = await makeTestTodoRepository();
+      const todo = makeTestTodo();
+      const expectedResult = {
+        success: false,
+        errors: ["Já existe um todo com id ou descrição enviado"],
+      };
+
+      await repository.create(todo);
+      // console.log(result);
+      const createdWithSameDescription = await repository.create({
+        id: todo.id,
+        description: "new description",
+        createdAt: new Date().toISOString(),
+      });
+
+      expect(createdWithSameDescription).toStrictEqual(expectedResult);
     });
   });
 
   describe("remove", () => {
-    test("should remove a todo", () => {});
+    test("should remove a todo", async () => {
+      const { repository } = await makeTestTodoRepository();
+      const [todo] = await insertTestTodos();
+      const expectedResult = {
+        success: true,
+        todo,
+      };
 
-    test("should throw an error if the todo does not exist", () => {});
+      const result = await repository.remove(todo.id);
+
+      expect(result).toStrictEqual(expectedResult);
+    });
+
+    test("should throw an error if the todo does not exist", async () => {
+      const { repository } = await makeTestTodoRepository();
+      const todo = makeTestTodo();
+      const expectedResult = {
+        success: false,
+        errors: ["Todo não encontrado"],
+      };
+
+      const result = await repository.remove(todo.id);
+
+      expect(result).toStrictEqual(expectedResult);
+    });
   });
 });
